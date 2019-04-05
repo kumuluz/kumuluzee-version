@@ -54,7 +54,7 @@ import java.util.logging.Logger;
         @EeComponentDependency(EeComponentType.SERVLET)})
 public class VersionExtension implements Extension {
 
-    private static String versionFilePath = "META-INF/VERSION.json";
+    private static String versionFilePath = "VERSION.json";
     private static String endpoint = "/version";
 
     private static final Logger log = Logger.getLogger(VersionExtension.class.getName());

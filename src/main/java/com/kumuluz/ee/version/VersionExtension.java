@@ -35,6 +35,7 @@ import com.kumuluz.ee.version.servlet.VersionServlet;
 
 import javax.json.Json;
 import javax.json.stream.JsonParser;
+import javax.json.stream.JsonParsingException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
@@ -127,26 +128,31 @@ public class VersionExtension implements Extension {
         KeyValuePair pair = new KeyValuePair();
         List<String> unsetValues = new LinkedList<>();
 
-        while (parser.hasNext()) {
-            final JsonParser.Event event = parser.next();
+        try {
+            while (parser.hasNext()) {
+                final JsonParser.Event event = parser.next();
 
-            switch (event) {
-                case KEY_NAME:
-                    pair = new KeyValuePair();
-                    pair.setKey(parser.getString());
-                    break;
-                case VALUE_STRING:
-                    String value = parser.getString();
+                switch (event) {
+                    case KEY_NAME:
+                        pair = new KeyValuePair();
+                        pair.setKey(parser.getString());
+                        break;
+                    case VALUE_STRING:
+                        String value = parser.getString();
 
-                    // add unfilled fields to list
-                    if (value.length() == 0 || value.charAt(0) == '$') {
-                        unsetValues.add(pair.getKey());
-                    } else {
-                        pair.setValue(value);
-                        versionPojo.addKeyValuePair(pair);
-                    }
-                    break;
+                        // add unfilled fields to list
+                        if (value.length() == 0 || value.charAt(0) == '$') {
+                            unsetValues.add(pair.getKey());
+                        } else {
+                            pair.setValue(value);
+                            versionPojo.addKeyValuePair(pair);
+                        }
+                        break;
+                }
             }
+        } catch (JsonParsingException e) {
+            log.severe("Invalid JSON in " + versionFilePath);
+            return false;
         }
 
         if (unsetValues.size() > 0)

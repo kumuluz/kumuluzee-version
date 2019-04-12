@@ -37,13 +37,14 @@ kumuluzee:
       file-path: test/MY_CUSTOM_.json
 ``` 
 
-Kumuluzee Version also looks for a docker-image-name configuration value, that then gets exposed in the json with the key
-"docker_image_name". This can be set
-with the following:
+We can also specify our own custom values that will then be exposed on the servlet. Use the key kumuluzee.version.values.\<your key\>.
+
+The following is an example of how to set the docker-image-name configuration value:
 ```yaml
 kumuluzee:
     version:
-      docker-image-name: myDockerImageName
+      values:
+        docker-image-name: myDockerImageName
 
 ```
 

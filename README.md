@@ -48,7 +48,7 @@ kumuluzee:
 
 ```
 
-The easiest way to set this is as an environment variable KUMULUZEE_VERSION_DOCKERIMAGENAME, which takes priority over
+The easiest way to set this is as an environment variable KUMULUZEE_VERSION_VALUES_DOCKERIMAGENAME, which takes priority over
 the yaml configuration.
 
 ### Example of VERSION.json

@@ -80,6 +80,8 @@ public class VersionExtension implements Extension {
             Optional<String> dockerImageName = cfg.get("kumuluzee.version.docker-image-name");
             dockerImageName.ifPresent(value -> versionPojo.addKeyValuePair(new KeyValuePair("docker_image_name", value)));
 
+            Optional<List<String>> customKeys = cfg.getMapKeys("kumuluzee.version.custom-keys");
+            customKeys.ifPresent(VersionExtension::addCustomKeysToVersionPojo);
 
             boolean success = initVersionDetails();
             if (success) {
@@ -87,6 +89,20 @@ public class VersionExtension implements Extension {
                 servletServer.registerServlet(VersionServlet.class, endpoint);
             } else
                 log.severe("Versions endpoint not initialized due to error");
+        }
+    }
+
+    /**
+     * Adds the custom keys defined in KumuluzEE config file to the versionsPojo
+     *
+     * @param customKeys list of Strings that represent the names of the custom keys
+     */
+    private static void addCustomKeysToVersionPojo(List<String> customKeys) {
+        ConfigurationUtil cfg = ConfigurationUtil.getInstance();
+
+        for (String customKey : customKeys) {
+            Optional<String> valuePair = cfg.get("kumuluzee.version.custom-keys." + customKey);
+            valuePair.ifPresent(value -> versionPojo.addKeyValuePair(new KeyValuePair(customKey, value)));
         }
     }
 

@@ -77,10 +77,7 @@ public class VersionExtension implements Extension {
             Optional<String> cfgFilePath = cfg.get("kumuluzee.version.file-path");
             cfgFilePath.ifPresent(value -> versionFilePath = value);
 
-            Optional<String> dockerImageName = cfg.get("kumuluzee.version.docker-image-name");
-            dockerImageName.ifPresent(value -> versionPojo.addKeyValuePair(new KeyValuePair("docker_image_name", value)));
-
-            Optional<List<String>> customKeys = cfg.getMapKeys("kumuluzee.version.custom-keys");
+            Optional<List<String>> customKeys = cfg.getMapKeys("kumuluzee.version.values");
             customKeys.ifPresent(VersionExtension::addCustomKeysToVersionPojo);
 
             boolean success = initVersionDetails();
@@ -101,7 +98,7 @@ public class VersionExtension implements Extension {
         ConfigurationUtil cfg = ConfigurationUtil.getInstance();
 
         for (String customKey : customKeys) {
-            Optional<String> valuePair = cfg.get("kumuluzee.version.custom-keys." + customKey);
+            Optional<String> valuePair = cfg.get("kumuluzee.version.values." + customKey);
             valuePair.ifPresent(value -> versionPojo.addKeyValuePair(new KeyValuePair(customKey, value)));
         }
     }

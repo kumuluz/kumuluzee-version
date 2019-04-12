@@ -120,8 +120,8 @@ public class VersionExtension implements Extension {
             log.severe("Cannot read from " + versionFilePath + ", unsupported encoding");
             return false;
         } catch (IOException e) {
-            log.severe("Cannot find " + versionFilePath + " file");
-            return false;
+            // assumes that VERSION.json is not provided
+            return true;
         }
 
         final JsonParser parser = Json.createParser(new StringReader(responseStrBuilder.toString()));

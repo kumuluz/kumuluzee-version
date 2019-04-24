@@ -2,7 +2,7 @@
 
 [![Build Status](https://img.shields.io/travis/kumuluz/kumuluzee-version/master.svg?style=flat)](https://travis-ci.org/kumuluz/kumuluzee-version)
 
-KumuluzEE Version provides a way to expose version details of your application.
+KumuluzEE Version provides mechanisms to expose version details of your microservices.
 
 ## Usage
 
@@ -17,7 +17,7 @@ You can enable KumuluzEE Version by adding the following dependency to the proje
 
 ### KumuluzEE Version configuration
 
-KumuluzEE Version will have a default endpoint at /version. You can change this with the KumuluzEE configuration
+KumuluzEE Version will have a default endpoint at `/version`. You can change this with the KumuluzEE configuration
 framework by setting the following key:
 
 ```yaml
@@ -27,7 +27,7 @@ kumuluzee:
 ```
 
 KumuluzEE Version will look for values to expose in a json file inside of the resources folder,
- the filepath is VERSION.json by default.
+ the filepath is `VERSION.json` by default.
 
 The default filepath for this file can be changed with the KumuluzEE configuration framework by setting the following key:
 
@@ -37,7 +37,7 @@ kumuluzee:
       file-path: test/MY_CUSTOM_.json
 ``` 
 
-We can also specify our own custom values that will then be exposed on the servlet. Use the key kumuluzee.version.values.\<your key\>.
+We can also specify our own custom values that will then be exposed on the servlet. Use the key `kumuluzee.version.values.\<your key\>`.
 
 The following is an example of how to set the docker-image-name configuration value:
 ```yaml

@@ -56,9 +56,11 @@ import java.util.logging.Logger;
 public class VersionExtension implements Extension {
 
     private static String versionFilePath = "VERSION.json";
-    private static String endpoint = "/version";
+    private static String endpoint = null;
 
     private static final Logger log = Logger.getLogger(VersionExtension.class.getName());
+
+    private static final String CFG_KUMULUZ_VERSION_ENDPOINT = "kumuluzee.version.endpoint";
 
     private static VersionPojo versionPojo;
 
@@ -71,7 +73,7 @@ public class VersionExtension implements Extension {
 
             ConfigurationUtil cfg = ConfigurationUtil.getInstance();
 
-            Optional<String> cfgEndpoint = cfg.get("kumuluzee.version.endpoint");
+            Optional<String> cfgEndpoint = cfg.get(CFG_KUMULUZ_VERSION_ENDPOINT);
             cfgEndpoint.ifPresent(value -> endpoint = value);
 
             Optional<String> cfgFilePath = cfg.get("kumuluzee.version.file-path");
@@ -82,8 +84,13 @@ public class VersionExtension implements Extension {
 
             boolean success = initVersionDetails();
             if (success) {
-                log.info("Initialized version endpoint at: " + endpoint);
-                servletServer.registerServlet(VersionServlet.class, endpoint);
+                log.info("Initialized version file at: " + versionFilePath);
+                if(endpoint != null) {
+                    servletServer.registerServlet(VersionServlet.class, endpoint);
+                    log.info("Initialized version endpoint at: " + endpoint);
+                } else {
+                    log.fine("Version endpoint not initialized due to missing config key "+CFG_KUMULUZ_VERSION_ENDPOINT);
+                }
             } else
                 log.severe("Versions endpoint not initialized due to error");
         }

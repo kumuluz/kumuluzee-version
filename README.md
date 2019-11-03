@@ -17,8 +17,8 @@ You can enable KumuluzEE Version by adding the following dependency to the proje
 
 ### KumuluzEE Version configuration
 
-KumuluzEE Version will have a default endpoint at `/version`. You can change this with the KumuluzEE configuration
-framework by setting the following key:
+KumuluzEE Version will have disabled endpoint by default. You can change this with the KumuluzEE configuration
+framework by setting the following key where version information will be exposed:
 
 ```yaml
 kumuluzee:

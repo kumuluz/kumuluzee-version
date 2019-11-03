@@ -29,8 +29,6 @@ import com.kumuluz.ee.common.dependencies.EeComponentType;
 import com.kumuluz.ee.common.dependencies.EeExtensionDef;
 import com.kumuluz.ee.common.wrapper.KumuluzServerWrapper;
 import com.kumuluz.ee.configuration.utils.ConfigurationUtil;
-import com.kumuluz.ee.version.pojo.KeyValuePair;
-import com.kumuluz.ee.version.pojo.VersionPojo;
 import com.kumuluz.ee.version.servlet.VersionServlet;
 
 import javax.json.Json;
@@ -55,46 +53,10 @@ import java.util.logging.Logger;
         @EeComponentDependency(EeComponentType.SERVLET)})
 public class VersionExtension implements Extension {
 
+    private static final Logger log = Logger.getLogger(VersionExtension.class.getName());
+    private static final String CFG_KUMULUZ_VERSION_ENDPOINT = "kumuluzee.version.endpoint";
     private static String versionFilePath = "VERSION.json";
     private static String endpoint = null;
-
-    private static final Logger log = Logger.getLogger(VersionExtension.class.getName());
-
-    private static final String CFG_KUMULUZ_VERSION_ENDPOINT = "kumuluzee.version.endpoint";
-
-    private static VersionPojo versionPojo;
-
-    public void init(KumuluzServerWrapper kumuluzServerWrapper, EeConfig eeConfig) {
-        if (kumuluzServerWrapper.getServer() instanceof ServletServer) {
-            log.info("Initializing version endpoint.");
-            versionPojo = new VersionPojo();
-            ServletServer servletServer = (ServletServer) kumuluzServerWrapper.getServer();
-
-
-            ConfigurationUtil cfg = ConfigurationUtil.getInstance();
-
-            Optional<String> cfgEndpoint = cfg.get(CFG_KUMULUZ_VERSION_ENDPOINT);
-            cfgEndpoint.ifPresent(value -> endpoint = value);
-
-            Optional<String> cfgFilePath = cfg.get("kumuluzee.version.file-path");
-            cfgFilePath.ifPresent(value -> versionFilePath = value);
-
-            Optional<List<String>> customKeys = cfg.getMapKeys("kumuluzee.version.values");
-            customKeys.ifPresent(VersionExtension::addCustomKeysToVersionPojo);
-
-            boolean success = initVersionDetails();
-            if (success) {
-                log.info("Initialized version file at: " + versionFilePath);
-                if(endpoint != null) {
-                    servletServer.registerServlet(VersionServlet.class, endpoint);
-                    log.info("Initialized version endpoint at: " + endpoint);
-                } else {
-                    log.fine("Version endpoint not initialized due to missing config key "+CFG_KUMULUZ_VERSION_ENDPOINT);
-                }
-            } else
-                log.severe("Versions endpoint not initialized due to error");
-        }
-    }
 
     /**
      * Adds the custom keys defined in KumuluzEE config file to the versionsPojo
@@ -106,12 +68,8 @@ public class VersionExtension implements Extension {
 
         for (String customKey : customKeys) {
             Optional<String> valuePair = cfg.get("kumuluzee.version.values." + customKey);
-            valuePair.ifPresent(value -> versionPojo.addKeyValuePair(new KeyValuePair(customKey, value)));
+            valuePair.ifPresent(value -> VersionInfo.getInstance().put(customKey, value));
         }
-    }
-
-    public void load() {
-
     }
 
     private static InputStream getVersionFileInputStream() throws IOException {
@@ -145,7 +103,7 @@ public class VersionExtension implements Extension {
         }
 
         final JsonParser parser = Json.createParser(new StringReader(responseStrBuilder.toString()));
-        KeyValuePair pair = new KeyValuePair();
+        String key = null;
         List<String> unsetValues = new LinkedList<>();
 
         try {
@@ -154,18 +112,16 @@ public class VersionExtension implements Extension {
 
                 switch (event) {
                     case KEY_NAME:
-                        pair = new KeyValuePair();
-                        pair.setKey(parser.getString());
+                        key = parser.getString();
                         break;
                     case VALUE_STRING:
                         String value = parser.getString();
 
                         // add unfilled fields to list
                         if (value.length() == 0 || value.charAt(0) == '$') {
-                            unsetValues.add(pair.getKey());
+                            unsetValues.add(key);
                         } else {
-                            pair.setValue(value);
-                            versionPojo.addKeyValuePair(pair);
+                            VersionInfo.getInstance().put(key, value);
                         }
                         break;
                 }
@@ -180,7 +136,38 @@ public class VersionExtension implements Extension {
         return true;
     }
 
-    public static VersionPojo getVersionPojo() {
-        return versionPojo;
+    public void init(KumuluzServerWrapper kumuluzServerWrapper, EeConfig eeConfig) {
+        if (kumuluzServerWrapper.getServer() instanceof ServletServer) {
+            log.info("Initializing version endpoint.");
+            ServletServer servletServer = (ServletServer) kumuluzServerWrapper.getServer();
+
+
+            ConfigurationUtil cfg = ConfigurationUtil.getInstance();
+
+            Optional<String> cfgEndpoint = cfg.get(CFG_KUMULUZ_VERSION_ENDPOINT);
+            cfgEndpoint.ifPresent(value -> endpoint = value);
+
+            Optional<String> cfgFilePath = cfg.get("kumuluzee.version.file-path");
+            cfgFilePath.ifPresent(value -> versionFilePath = value);
+
+            Optional<List<String>> customKeys = cfg.getMapKeys("kumuluzee.version.values");
+            customKeys.ifPresent(VersionExtension::addCustomKeysToVersionPojo);
+
+            boolean success = initVersionDetails();
+            if (success) {
+                log.info("Initialized version file at: " + versionFilePath);
+                if (endpoint != null) {
+                    servletServer.registerServlet(VersionServlet.class, endpoint);
+                    log.info("Initialized version endpoint at: " + endpoint);
+                } else {
+                    log.fine("Version endpoint not initialized due to missing config key " + CFG_KUMULUZ_VERSION_ENDPOINT);
+                }
+            } else
+                log.severe("Versions endpoint not initialized due to error");
+        }
+    }
+
+    public void load() {
+
     }
 }

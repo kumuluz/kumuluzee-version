@@ -18,40 +18,53 @@
  *  software. See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.kumuluz.ee.version.pojo;
+package com.kumuluz.ee.version;
 
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * List of key value pairs, holds functions to transform it to JSON format
+ * Holds version information and functions to transform it to JSON format
  *
- * @author Klemen Kobau
+ * @author Klemen Kobau, gpor0
  * @since 1.0.0
  */
-public class VersionPojo {
-    private List<KeyValuePair> keyValuePairs;
+public class VersionInfo {
 
-    public VersionPojo() {
-        keyValuePairs = new LinkedList<>();
+    private static final VersionInfo INSTANCE = new VersionInfo();
+
+    private Map<String, String> versionPropertyMap;
+
+    public VersionInfo() {
+        versionPropertyMap = new HashMap<>();
     }
 
-    public List<KeyValuePair> getKeyValuePairs() {
-        return keyValuePairs;
+    public static VersionInfo getInstance() {
+        return INSTANCE;
     }
 
-    public void addKeyValuePair(KeyValuePair pair) {
-        keyValuePairs.add(pair);
+    public Map<String, String> getMap() {
+        return Collections.unmodifiableMap(versionPropertyMap);
+    }
+
+    protected void put(String key, String val) {
+        versionPropertyMap.put(key, val);
+    }
+
+    public String get(String key) {
+        return versionPropertyMap.get(key);
     }
 
     public String toJSON() {
-        JsonObjectBuilder json = Json.createObjectBuilder();
+        final JsonObjectBuilder json = Json.createObjectBuilder();
 
-        for (KeyValuePair keyValuePair : keyValuePairs) {
-            json.add(keyValuePair.getKey(), keyValuePair.getValue());
-        }
+        versionPropertyMap.entrySet().forEach(e -> {
+            json.add(e.getKey(), e.getValue());
+        });
+
         return json.build().toString();
     }
 }

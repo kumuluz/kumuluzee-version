@@ -20,8 +20,7 @@
  */
 package com.kumuluz.ee.version.servlet;
 
-import com.kumuluz.ee.version.VersionExtension;
-import com.kumuluz.ee.version.pojo.VersionPojo;
+import com.kumuluz.ee.version.VersionInfo;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -42,8 +41,8 @@ public class VersionServlet extends HttpServlet {
         resp.setContentType("application/json");
         PrintWriter writer = resp.getWriter();
 
-        VersionPojo versionPojo = VersionExtension.getVersionPojo();
-        writer.println(versionPojo.toJSON());
+        VersionInfo versionInfo = VersionInfo.getInstance();
+        writer.println(versionInfo.toJSON());
 
         writer.close();
     }

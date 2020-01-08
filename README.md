@@ -22,7 +22,7 @@ framework by setting the following key where version information will be exposed
 
 ```yaml
 kumuluzee:
-    version:
+    version-info:
       endpoint: /myCustomEndpoint
 ```
 
@@ -33,16 +33,17 @@ The default filepath for this file can be changed with the KumuluzEE configurati
 
 ```yaml
 kumuluzee:
-    version:
+    version-info:
       file-path: test/MY_CUSTOM_.json
 ``` 
 
-We can also specify our own custom values that will then be exposed on the servlet. Use the key `kumuluzee.version.values.\<your key\>`.
+We can also specify our own custom values that will then be exposed on the servlet. Use the key 
+`kumuluzee.version-info.values.\<your key\>`.
 
 The following is an example of how to set the docker-image-name configuration value:
 ```yaml
 kumuluzee:
-    version:
+    version-info:
       values:
         docker-image-name: myDockerImageName
 

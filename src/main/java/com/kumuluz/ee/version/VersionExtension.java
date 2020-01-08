@@ -54,7 +54,7 @@ import java.util.logging.Logger;
 public class VersionExtension implements Extension {
 
     private static final Logger log = Logger.getLogger(VersionExtension.class.getName());
-    private static final String CFG_KUMULUZ_VERSION_ENDPOINT = "kumuluzee.version.endpoint";
+    private static final String CFG_KUMULUZ_VERSION_ENDPOINT = "kumuluzee.version-info.endpoint";
     private static String versionFilePath = "VERSION.json";
     private static String endpoint = null;
 
@@ -67,7 +67,7 @@ public class VersionExtension implements Extension {
         ConfigurationUtil cfg = ConfigurationUtil.getInstance();
 
         for (String customKey : customKeys) {
-            Optional<String> valuePair = cfg.get("kumuluzee.version.values." + customKey);
+            Optional<String> valuePair = cfg.get("kumuluzee.version-info.values." + customKey);
             valuePair.ifPresent(value -> VersionInfo.getInstance().put(customKey, value));
         }
     }
@@ -141,16 +141,28 @@ public class VersionExtension implements Extension {
             log.info("Initializing version endpoint.");
             ServletServer servletServer = (ServletServer) kumuluzServerWrapper.getServer();
 
-
             ConfigurationUtil cfg = ConfigurationUtil.getInstance();
+
+            VersionInfo versionInfo = VersionInfo.getInstance();
 
             Optional<String> cfgEndpoint = cfg.get(CFG_KUMULUZ_VERSION_ENDPOINT);
             cfgEndpoint.ifPresent(value -> endpoint = value);
 
-            Optional<String> cfgFilePath = cfg.get("kumuluzee.version.file-path");
+            // add common microservice information
+            if (cfg.get("kumuluzee.name").isPresent()){
+                versionInfo.put("name", cfg.get("kumuluzee.name").get());
+            }
+            if (cfg.get("kumuluzee.version").isPresent()){
+                versionInfo.put("version", cfg.get("kumuluzee.version").get());
+            }
+            if (cfg.get("kumuluzee.env.name").isPresent()){
+                versionInfo.put("environment-name", cfg.get("kumuluzee.env.name").get());
+            }
+
+            Optional<String> cfgFilePath = cfg.get("kumuluzee.version-info.file-path");
             cfgFilePath.ifPresent(value -> versionFilePath = value);
 
-            Optional<List<String>> customKeys = cfg.getMapKeys("kumuluzee.version.values");
+            Optional<List<String>> customKeys = cfg.getMapKeys("kumuluzee.version-info.values");
             customKeys.ifPresent(VersionExtension::addCustomKeysToVersionPojo);
 
             boolean success = initVersionDetails();

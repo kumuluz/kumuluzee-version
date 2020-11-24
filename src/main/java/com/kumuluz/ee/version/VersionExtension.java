@@ -54,7 +54,8 @@ import java.util.logging.Logger;
 public class VersionExtension implements Extension {
 
     private static final Logger log = Logger.getLogger(VersionExtension.class.getName());
-    private static final String CFG_KUMULUZ_VERSION_ENDPOINT = "kumuluzee.version-info.endpoint";
+    private static final String CFG_KUMULUZEE_VERSION_INFO = "kumuluzee.version-info";
+    private static final String CFG_KUMULUZEE_VERSION_INFO_ENDPOINT = CFG_KUMULUZEE_VERSION_INFO + ".endpoint";
     private static String versionFilePath = "VERSION.json";
     private static String endpoint = null;
 
@@ -67,7 +68,7 @@ public class VersionExtension implements Extension {
         ConfigurationUtil cfg = ConfigurationUtil.getInstance();
 
         for (String customKey : customKeys) {
-            Optional<String> valuePair = cfg.get("kumuluzee.version-info.values." + customKey);
+            Optional<String> valuePair = cfg.get(CFG_KUMULUZEE_VERSION_INFO + ".values." + customKey);
             valuePair.ifPresent(value -> VersionInfo.getInstance().put(customKey, value));
         }
     }
@@ -145,7 +146,7 @@ public class VersionExtension implements Extension {
 
             VersionInfo versionInfo = VersionInfo.getInstance();
 
-            Optional<String> cfgEndpoint = cfg.get(CFG_KUMULUZ_VERSION_ENDPOINT);
+            Optional<String> cfgEndpoint = cfg.get(CFG_KUMULUZEE_VERSION_INFO_ENDPOINT);
             cfgEndpoint.ifPresent(value -> endpoint = value);
 
             // add common microservice information
@@ -159,10 +160,10 @@ public class VersionExtension implements Extension {
                 versionInfo.put("environment-name", cfg.get("kumuluzee.env.name").get());
             }
 
-            Optional<String> cfgFilePath = cfg.get("kumuluzee.version-info.file-path");
+            Optional<String> cfgFilePath = cfg.get(CFG_KUMULUZEE_VERSION_INFO + ".file-path");
             cfgFilePath.ifPresent(value -> versionFilePath = value);
 
-            Optional<List<String>> customKeys = cfg.getMapKeys("kumuluzee.version-info.values");
+            Optional<List<String>> customKeys = cfg.getMapKeys(CFG_KUMULUZEE_VERSION_INFO + ".values");
             customKeys.ifPresent(VersionExtension::addCustomKeysToVersionPojo);
 
             boolean success = initVersionDetails();
@@ -172,7 +173,7 @@ public class VersionExtension implements Extension {
                     servletServer.registerServlet(VersionServlet.class, endpoint);
                     log.info("Initialized version endpoint at: " + endpoint);
                 } else {
-                    log.fine("Version endpoint not initialized due to missing config key " + CFG_KUMULUZ_VERSION_ENDPOINT);
+                    log.fine("Version endpoint not initialized due to missing config key " + CFG_KUMULUZEE_VERSION_INFO_ENDPOINT);
                 }
             } else
                 log.severe("Versions endpoint not initialized due to error");
@@ -181,5 +182,12 @@ public class VersionExtension implements Extension {
 
     public void load() {
 
+    }
+
+    @Override
+    public boolean isEnabled() {
+        Optional<Boolean> enabled = ConfigurationUtil.getInstance().getBoolean(CFG_KUMULUZEE_VERSION_INFO + ".enabled");
+
+        return enabled.orElse(true);
     }
 }
